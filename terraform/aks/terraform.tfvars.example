@@ -1,0 +1,5 @@
+resource_group_name = "viktor-rg"
+cluster_name        = "aks-devops-expensy"
+dns_prefix          = "devops-expensy"
+node_count          = 1
+vm_size             = "Standard_B2s"

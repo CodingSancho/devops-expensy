@@ -2,10 +2,7 @@
   "name": "devops-expensy",
   "private": true,
   "scripts": {
-    "dev": "node scripts/dev-with-deps.js",
-    "dev:apps": "node scripts/dev.js",
-    "dev:deps": "docker compose up -d mongo redis",
-    "dev:backend": "node scripts/run-service.js backend dev",
-    "dev:frontend": "node scripts/run-service.js frontend dev"
+    "dev": "node scripts/dev.js",
+    "start": "docker compose up --build"
   }
 }
