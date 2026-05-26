@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import 'dotenv/config';
 
 const connectDB = async () => {
   try {
+    if (!process.env.DATABASE_URI) {
+      throw new Error('DATABASE_URI is not configured');
+    }
+
     await mongoose.connect(process.env.DATABASE_URI!, {
     });
     console.log('MongoDB connected');
