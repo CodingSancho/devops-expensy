@@ -175,7 +175,7 @@ export default function Component() {
               {expenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell className="font-medium">{expense.name}</TableCell>
-                  <TableCell className="text-right">${expense.amount}</TableCell>
+                  <TableCell>${expense.amount}</TableCell>
                   <TableCell>{expense.category}</TableCell>
                 </TableRow>
               ))}
