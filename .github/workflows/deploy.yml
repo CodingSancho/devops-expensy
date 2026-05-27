@@ -77,7 +77,7 @@ jobs:
           test -n "$CERT_MANAGER_EMAIL"
 
           mkdir -p rendered-k8s
-          cp k8s/*.yaml rendered-k8s/
+          find k8s -maxdepth 1 -name '*.yaml' ! -name '*.example.yaml' -exec cp {} rendered-k8s/ \;
 
           sed -i "s#viktorexpensyacr.azurecr.io/viktor-expensy-backend:latest#$ACR_LOGIN_SERVER/$BACKEND_IMAGE:${{ github.sha }}#g" rendered-k8s/backend.yaml
           sed -i "s#viktorexpensyacr.azurecr.io/viktor-expensy-frontend:latest#$ACR_LOGIN_SERVER/$FRONTEND_IMAGE:${{ github.sha }}#g" rendered-k8s/frontend.yaml
@@ -89,6 +89,24 @@ jobs:
           mkdir -p "$HOME/.kube"
           echo "${{ secrets.KUBE_CONFIG }}" > "$HOME/.kube/config"
           chmod 600 "$HOME/.kube/config"
+
+      - name: Create Kubernetes app secret
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_INITDB_ROOT_USERNAME }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+        run: |
+          test -n "$MONGO_INITDB_ROOT_USERNAME"
+          test -n "$MONGO_INITDB_ROOT_PASSWORD"
+          test -n "$REDIS_PASSWORD"
+
+          kubectl create secret generic viktor-expensy-secret \
+            --namespace "$K8S_NAMESPACE" \
+            --from-literal=MONGO_INITDB_ROOT_USERNAME="$MONGO_INITDB_ROOT_USERNAME" \
+            --from-literal=MONGO_INITDB_ROOT_PASSWORD="$MONGO_INITDB_ROOT_PASSWORD" \
+            --from-literal=REDIS_PASSWORD="$REDIS_PASSWORD" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
 
       - name: Deploy to AKS
         run: |
