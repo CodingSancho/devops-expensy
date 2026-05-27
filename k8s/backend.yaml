@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: viktor-expensy
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: viktorexpensyacr.azurecr.io/viktor-expensy-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8706
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: viktor-expensy-config
+                  key: BACKEND_PORT
+            - name: DATABASE_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: viktor-expensy-config
+                  key: DATABASE_URI
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: viktor-expensy-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: viktor-expensy-config
+                  key: REDIS_PORT
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: viktor-expensy-secret
+                  key: REDIS_PASSWORD
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8706
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8706
+            initialDelaySeconds: 20
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: viktor-expensy
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+    - name: http
+      port: 8706
+      targetPort: 8706

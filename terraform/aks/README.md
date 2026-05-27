@@ -23,13 +23,14 @@ terraform apply
 After apply finishes, configure `kubectl`:
 
 ```bash
-az aks get-credentials --resource-group viktor-rg --name aks-devops-expensy --overwrite-existing
+az aks get-credentials --resource-group viktor-rg --name viktor-expensy --overwrite-existing
 kubectl get nodes
 ```
 
 ## Defaults
 
 - Resource group: `viktor-rg`
+- AKS region: `eastus`
 - Node count: `1`
 - VM size: `Standard_B2s`
 - Kubernetes version: Azure regional default

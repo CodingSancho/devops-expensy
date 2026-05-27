@@ -19,7 +19,7 @@ data "azurerm_resource_group" "main" {
 
 resource "azurerm_kubernetes_cluster" "main" {
   name                = var.cluster_name
-  location            = data.azurerm_resource_group.main.location
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.main.name
   dns_prefix          = var.dns_prefix
   kubernetes_version  = var.kubernetes_version

@@ -4,16 +4,22 @@ variable "resource_group_name" {
   default     = "viktor-rg"
 }
 
+variable "location" {
+  description = "Azure region where the AKS cluster will be created."
+  type        = string
+  default     = "eastus"
+}
+
 variable "cluster_name" {
   description = "Name of the AKS cluster."
   type        = string
-  default     = "aks-devops-expensy"
+  default     = "viktor-expensy"
 }
 
 variable "dns_prefix" {
   description = "DNS prefix used by the AKS API server."
   type        = string
-  default     = "devops-expensy"
+  default     = "viktor-expensy"
 }
 
 variable "kubernetes_version" {
@@ -38,7 +44,7 @@ variable "tags" {
   description = "Tags applied to Azure resources."
   type        = map(string)
   default = {
-    project     = "devops-expensy"
+    project     = "viktor-expensy"
     environment = "dev"
     managed_by  = "terraform"
   }
