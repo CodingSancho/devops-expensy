@@ -12,6 +12,16 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
+app.get('/load', (_req, res) => {
+  const end = Date.now() + 250;
+
+  while (Date.now() < end) {
+    Math.sqrt(Math.random() * Number.MAX_SAFE_INTEGER);
+  }
+
+  res.status(200).json({ status: 'loaded' });
+});
+
 app.use('/api', expenseRoutes);
 
 connectDB();

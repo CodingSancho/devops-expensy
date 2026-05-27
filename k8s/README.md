@@ -13,6 +13,8 @@ They include:
 - Deployment and Service for frontend
 - NGINX Ingress routing for frontend and backend
 - cert-manager ClusterIssuer for Let's Encrypt TLS certificates
+- CPU and memory resource limits
+- Horizontal Pod Autoscalers for frontend and backend
 
 ## Before Applying
 
@@ -65,6 +67,12 @@ kubectl get svc ingress-nginx-controller -n ingress-nginx
 kubectl apply -f k8s/
 ```
 
+Autoscaling requires metrics-server. AKS clusters often include it, but if HPA shows `<unknown>` metrics, install it:
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+```
+
 ## Check Status
 
 ```bash
@@ -72,19 +80,47 @@ kubectl get pods -n viktor-expensy
 kubectl get svc -n viktor-expensy
 kubectl get ingress -n viktor-expensy
 kubectl get certificate -n viktor-expensy
+kubectl get hpa -n viktor-expensy
 ```
 
 The frontend and backend services are internal `ClusterIP` services. The ingress exposes the app on HTTPS port `443`, routes `/` to the frontend, and routes `/api` to the backend.
+
+## Autoscaling Demo
+
+The backend and frontend start with one pod. The backend can scale up to five pods, and the frontend can scale up to three pods when average CPU usage goes above 50%.
+
+Watch the autoscalers:
+
+```bash
+kubectl get hpa -n viktor-expensy -w
+```
+
+Generate simple backend traffic from inside the cluster:
+
+```bash
+kubectl run load-test \
+  --rm \
+  -i \
+  --tty \
+  --image=busybox:1.36 \
+  --restart=Never \
+  -n viktor-expensy \
+  -- /bin/sh -c "while true; do wget -q -O- http://backend:8706/load; done"
+```
+
+Stop the command with `Ctrl+C`. After the load stops, HPA should scale the deployment back down to one pod after a short cooldown.
 
 ## GitHub Actions CI/CD
 
 The workflow in `.github/workflows/deploy.yml` builds the backend and frontend, pushes both images to Azure Container Registry, renders the Kubernetes manifests with the current image tag and domain values, then deploys to AKS.
 
-Create these GitHub repository settings before running it:
+Create these GitHub repository secrets before running it:
 
-- Secret `AZURE_CREDENTIALS`: JSON credentials for an Azure service principal with access to the resource group, AKS cluster, and ACR.
-- Variable `APP_DOMAIN`: your ingress hostname, for example `viktor.eastus.cloudapp.azure.com`.
-- Variable `CERT_MANAGER_EMAIL`: the email address used for Let's Encrypt certificate registration.
+- Secret `ACR_USERNAME`: Azure Container Registry username.
+- Secret `ACR_PASSWORD`: Azure Container Registry password.
+- Secret `KUBE_CONFIG`: AKS kubeconfig content.
+- Secret `APP_DOMAIN`: your ingress hostname, for example `viktor.eastus.cloudapp.azure.com`.
+- Secret `CERT_MANAGER_EMAIL`: the email address used for Let's Encrypt certificate registration.
 
 Make sure AKS can pull images from ACR:
 
