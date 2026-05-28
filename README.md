@@ -21,6 +21,7 @@ In plain language: the platform opens more checkout lanes during a rush, then cl
 - Prometheus and Grafana monitoring through `kube-prometheus-stack`.
 - Secure configuration patterns using GitHub Actions secrets and Kubernetes Secrets instead of committed credentials.
 - A repeatable load test that shows backend CPU pressure, replica scaling, and load distribution in Grafana.
+- Security and compliance documentation covering identity, secrets, network exposure, TLS, and monitoring retention.
 
 ## Architecture
 
@@ -149,6 +150,8 @@ This repository intentionally excludes local credentials and generated cloud sta
 
 The deployment flow creates real Kubernetes Secrets from GitHub Actions secrets at runtime. This keeps sensitive values out of source control while still allowing automated deployments.
 
+See [`SECURITY.md`](SECURITY.md) for the security overview, compliance notes, and production hardening backlog.
+
 ## Repository Guide
 
 | Path | Description |
@@ -158,6 +161,7 @@ The deployment flow creates real Kubernetes Secrets from GitHub Actions secrets 
 | `k8s/` | Kubernetes manifests, HPA, ingress, cert-manager issuer, and monitoring values. |
 | `terraform/aks/` | AKS infrastructure configuration. |
 | `.github/workflows/deploy.yml` | CI/CD pipeline for build and deployment. |
+| `SECURITY.md` | Security controls, compliance notes, and production hardening backlog. |
 | `docker-compose.yml` | Local development support. |
 
 ## Prerequisites
