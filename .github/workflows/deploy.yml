@@ -77,7 +77,17 @@ jobs:
           test -n "$CERT_MANAGER_EMAIL"
 
           mkdir -p rendered-k8s
-          find k8s -maxdepth 1 -name '*.yaml' ! -name '*.example.yaml' -exec cp {} rendered-k8s/ \;
+          cp \
+            k8s/namespace.yaml \
+            k8s/configmap.yaml \
+            k8s/mongo.yaml \
+            k8s/redis.yaml \
+            k8s/backend.yaml \
+            k8s/frontend.yaml \
+            k8s/ingress.yaml \
+            k8s/cluster-issuer.yaml \
+            k8s/hpa.yaml \
+            rendered-k8s/
 
           sed -i "s#viktorexpensyacr.azurecr.io/viktor-expensy-backend:latest#$ACR_LOGIN_SERVER/$BACKEND_IMAGE:${{ github.sha }}#g" rendered-k8s/backend.yaml
           sed -i "s#viktorexpensyacr.azurecr.io/viktor-expensy-frontend:latest#$ACR_LOGIN_SERVER/$FRONTEND_IMAGE:${{ github.sha }}#g" rendered-k8s/frontend.yaml
