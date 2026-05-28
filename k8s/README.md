@@ -73,7 +73,16 @@ kubectl get svc ingress-nginx-controller -n ingress-nginx
 ## Apply
 
 ```bash
-kubectl apply -f k8s/
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
+kubectl apply -f k8s/mongo.yaml
+kubectl apply -f k8s/redis.yaml
+kubectl apply -f k8s/backend.yaml
+kubectl apply -f k8s/frontend.yaml
+kubectl apply -f k8s/ingress.yaml
+kubectl apply -f k8s/cluster-issuer.yaml
+kubectl apply -f k8s/hpa.yaml
 ```
 
 Autoscaling requires metrics-server. AKS clusters often include it, but if HPA shows `<unknown>` metrics, install it:
@@ -98,32 +107,39 @@ The frontend and backend services are internal `ClusterIP` services. The ingress
 
 The backend and frontend start with one pod. The backend can scale up to five pods, and the frontend can scale up to three pods when average CPU usage goes above 50%.
 
-Watch the autoscalers:
+Open Grafana and use the `Kubernetes / Compute Resources / Namespace (Pods)` dashboard with the namespace set to `viktor-expensy`. This makes the demo understandable for both technical and non-technical viewers: one backend pod receives load, Kubernetes starts more backend pods, and the work is spread across them.
+
+Use terminal commands as a truth check while Grafana is the main presentation view:
 
 ```bash
 kubectl get hpa -n viktor-expensy -w
 ```
 
-Generate simple backend traffic from inside the cluster:
+Generate controlled backend traffic from inside the cluster:
 
 ```bash
-kubectl run load-test \
-  --rm \
-  -i \
-  --tty \
+kubectl run load-test-1 \
   --image=busybox:1.36 \
   --restart=Never \
   -n viktor-expensy \
-  -- /bin/sh -c "while true; do wget -q -O- http://backend:8706/load; done"
+  -- /bin/sh -c 'while true; do wget -q -O- http://backend:8706/load; sleep 0.3; done'
+
+kubectl run load-test-2 \
+  --image=busybox:1.36 \
+  --restart=Never \
+  -n viktor-expensy \
+  -- /bin/sh -c 'while true; do wget -q -O- http://backend:8706/load; sleep 0.3; done'
 ```
 
-Stop the command with `Ctrl+C`. After the load stops, HPA should scale the deployment back down to one pod after a short cooldown.
+The load-test pods repeatedly call the backend `/load` endpoint, which creates CPU pressure. The HPA should scale the backend from one pod toward five pods. Once the traffic is distributed across the replicas, each backend pod carries a smaller share of the work.
 
-If the temporary load-test pod remains in `Error` or `Completed` after stopping the demo, remove it:
+Stop the demo:
 
 ```bash
-kubectl delete pod load-test -n viktor-expensy
+kubectl delete pod load-test-1 load-test-2 -n viktor-expensy --ignore-not-found
 ```
+
+After the load stops, HPA should scale the deployment back down to one pod after a short cooldown.
 
 ## Monitoring
 

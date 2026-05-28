@@ -34,11 +34,18 @@ spec:
                 configMapKeyRef:
                   name: viktor-expensy-config
                   key: BACKEND_PORT
-            - name: DATABASE_URI
+            - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
-                configMapKeyRef:
-                  name: viktor-expensy-config
-                  key: DATABASE_URI
+                secretKeyRef:
+                  name: viktor-expensy-secret
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: viktor-expensy-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
+            - name: DATABASE_URI
+              value: "mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@mongo:27017/expenses?authSource=admin"
             - name: REDIS_HOST
               valueFrom:
                 configMapKeyRef:

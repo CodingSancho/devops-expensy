@@ -5,6 +5,5 @@ metadata:
   namespace: viktor-expensy
 data:
   BACKEND_PORT: "8706"
-  DATABASE_URI: "mongodb://root:example@mongo:27017/expenses?authSource=admin"
   REDIS_HOST: "redis"
   REDIS_PORT: "6379"
